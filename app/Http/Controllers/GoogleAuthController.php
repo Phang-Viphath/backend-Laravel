@@ -61,7 +61,6 @@ class GoogleAuthController extends Controller
                 ]);
             }
 
-            // Redirect to frontend with guest data
             $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
             return redirect($frontendUrl . '/auth/google/callback?guest_id=' . $guest->id . '&name=' . urlencode($guest->name) . '&email=' . urlencode($guest->email) . '&image=' . urlencode($guest->image ?? ''));
         } catch (\Exception $e) {

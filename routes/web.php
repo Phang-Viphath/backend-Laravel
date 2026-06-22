@@ -18,6 +18,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Admin Google Auth routes
+Route::get('/auth/admin/google', [GoogleAuthController::class, 'redirect']);
+Route::get('/auth/admin/google/callback', [GoogleAuthController::class, 'callback']);
+
 // Guest Google Auth routes
 Route::get('/auth/guest/google', [GoogleAuthController::class, 'guestRedirect']);
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'guestCallback']);
