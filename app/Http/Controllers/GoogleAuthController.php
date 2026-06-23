@@ -61,11 +61,10 @@ class GoogleAuthController extends Controller
                 ]);
             }
 
-            // Redirect to frontend with guest data
-            $frontendUrl = config('app.frontend_url', 'https://frontend-user-mu-lac.vercel.app');
+            $frontendUrl = config('app.frontend_url', 'http://localhost:5173');
             return redirect($frontendUrl . '/auth/google/callback?guest_id=' . $guest->id . '&name=' . urlencode($guest->name) . '&email=' . urlencode($guest->email) . '&image=' . urlencode($guest->image ?? ''));
         } catch (\Exception $e) {
-            $frontendUrl = config('app.frontend_url', 'https://frontend-user-mu-lac.vercel.app');
+            $frontendUrl = config('app.frontend_url', 'http://localhost:5173');
             return redirect($frontendUrl . '/login?error=google_auth_failed');
         }
     }   
