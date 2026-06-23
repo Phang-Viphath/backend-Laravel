@@ -61,10 +61,11 @@ class GoogleAuthController extends Controller
                 ]);
             }
 
-            $frontendUrl = config('app.frontend_url', 'http://localhost:5173');
+            // Redirect to frontend with guest data
+            $frontendUrl = config('services.google.frontend_url');
             return redirect($frontendUrl . '/auth/google/callback?guest_id=' . $guest->id . '&name=' . urlencode($guest->name) . '&email=' . urlencode($guest->email) . '&image=' . urlencode($guest->image ?? ''));
         } catch (\Exception $e) {
-            $frontendUrl = config('app.frontend_url', 'http://localhost:5173');
+            $frontendUrl = config('services.google.frontend_url');
             return redirect($frontendUrl . '/login?error=google_auth_failed');
         }
     }   
