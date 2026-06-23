@@ -35,12 +35,15 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-Cloudinary (required for image upload):
+Aws (required for image upload):
 
 ```env
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
+FILESYSTEM_DISK=
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=
+AWS_BUCKET=
+AWS_USE_PATH_STYLE_ENDPOINT=
 ```
 
 4) Generate app key
