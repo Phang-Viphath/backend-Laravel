@@ -522,10 +522,8 @@
             
             let html = `
                 <a href="#" class="logo">
-                    <div class="logo-icon">
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                        </svg>
+                    <div class="logo-icon" style="background: transparent; box-shadow: none;">
+                        <img src="/assets/Hotel_icon.png" alt="Hotel Icon" style="width: 32px; height: 32px; object-fit: contain;">
                     </div>
                     API Docs
                 </a>
