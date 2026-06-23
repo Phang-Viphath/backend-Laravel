@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\Room;
-use App\Services\CloudinaryService;
+use App\Services\S3Service;
 use Illuminate\Http\Request;
 
 class RoomController extends Controller
@@ -27,8 +27,8 @@ class RoomController extends Controller
 
         $imageUrl = null;
         if ($request->hasFile('image')) {
-            $cloudinary = app(CloudinaryService::class);
-            $upload = $cloudinary->uploadImage($request->file('image')->getRealPath(), 'rooms');
+            $s3 = app(S3Service::class);
+            $upload = $s3->uploadImage($request->file('image')->getRealPath(), 'rooms');
             $imageUrl = $upload['url'];
         }   
 
@@ -84,12 +84,12 @@ class RoomController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $cloudinary = app(CloudinaryService::class);
+            $s3 = app(S3Service::class);
             // Delete old image if it exists
             if ($room->image) {
-                $cloudinary->deleteImage($room->image);
+                $s3->deleteImage($room->image);
             }
-            $upload = $cloudinary->uploadImage($request->file('image')->getRealPath(), 'rooms');
+            $upload = $s3->uploadImage($request->file('image')->getRealPath(), 'rooms');
             $room->image = $upload['url'];
         }
 
@@ -118,8 +118,8 @@ class RoomController extends Controller
         }
 
         if ($room->image) {
-            $cloudinary = app(CloudinaryService::class);
-            $cloudinary->deleteImage($room->image);
+            $s3 = app(S3Service::class);
+            $s3->deleteImage($room->image);
         }
 
         $room->delete();

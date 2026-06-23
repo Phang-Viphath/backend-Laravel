@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Guests;
-use App\Services\CloudinaryService;
+use App\Services\S3Service;
 
 class GuestsController extends Controller
 {
@@ -25,8 +25,8 @@ class GuestsController extends Controller
 
         $imageUrl = null;
         if ($request->hasFile('image')) {
-            $cloudinary = app(CloudinaryService::class);
-            $upload = $cloudinary->uploadImage($request->file('image')->getRealPath(), 'guests');
+            $s3 = app(S3Service::class);
+            $upload = $s3->uploadImage($request->file('image')->getRealPath(), 'guests');
             $imageUrl = $upload['url'];
         }
 
@@ -81,12 +81,12 @@ class GuestsController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $cloudinary = app(CloudinaryService::class);
+            $s3 = app(S3Service::class);
             // Delete old image if it exists
             if ($guest->image) {
-                $cloudinary->deleteImage($guest->image);
+                $s3->deleteImage($guest->image);
             }
-            $upload = $cloudinary->uploadImage($request->file('image')->getRealPath(), 'guests');
+            $upload = $s3->uploadImage($request->file('image')->getRealPath(), 'guests');
             $guest->image = $upload['url'];
         }
 
@@ -111,8 +111,8 @@ class GuestsController extends Controller
         }
 
         if ($guest->image) {
-            $cloudinary = app(CloudinaryService::class);
-            $cloudinary->deleteImage($guest->image);
+            $s3 = app(S3Service::class);
+            $s3->deleteImage($guest->image);
         }
 
         $guest->delete();

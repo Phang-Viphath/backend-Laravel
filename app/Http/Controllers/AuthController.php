@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
-use App\Services\CloudinaryService;
+use App\Services\S3Service;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
@@ -33,8 +33,8 @@ class AuthController extends Controller
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $cloudinary = app(CloudinaryService::class);
-            $uploadResult = $cloudinary->uploadImage($request->file('image')->getRealPath(), 'profiles');
+            $s3 = app(S3Service::class);
+            $uploadResult = $s3->uploadImage($request->file('image')->getRealPath(), 'profiles');
             $imagePath = $uploadResult['url'] ?? null;
         }
 

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
-use App\Services\CloudinaryService;
+use App\Services\S3Service;
 
 class UserController extends Controller
 {
@@ -71,13 +71,13 @@ class UserController extends Controller
             return response()->json(['message' => 'User not found'], 404);
         }
 
-        $cloudinary = app(CloudinaryService::class);
+        $s3 = app(S3Service::class);
 
         if ($User->profile && $User->profile->image) {
-            $cloudinary->deleteImage($User->profile->image);
+            $s3->deleteImage($User->profile->image);
         }
 
-        $upload = $cloudinary->uploadImage($request->file('image')->getRealPath(), 'profiles');
+        $upload = $s3->uploadImage($request->file('image')->getRealPath(), 'profiles');
 
         $User->profile()->updateOrCreate([], [
             'image' => $upload['url'],
@@ -97,8 +97,8 @@ class UserController extends Controller
         }
 
         if ($User->profile && $User->profile->image) {
-            $cloudinary = app(CloudinaryService::class);
-            $cloudinary->deleteImage($User->profile->image);
+            $s3 = app(S3Service::class);
+            $s3->deleteImage($User->profile->image);
             $User->profile->image = null;
             $User->profile->save();
         }
@@ -116,8 +116,8 @@ class UserController extends Controller
             return response()->json(['message' => 'User not found'], 404);
         }
         if ($User->profile && $User->profile->image) {
-            $cloudinary = app(CloudinaryService::class);
-            $cloudinary->deleteImage($User->profile->image);
+            $s3 = app(S3Service::class);
+            $s3->deleteImage($User->profile->image);
         }
         $User->delete();
         return response()->json(['message' => 'User deleted successfully']);

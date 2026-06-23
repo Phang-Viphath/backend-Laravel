@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\CloudinaryService;
+use App\Services\S3Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -53,14 +53,14 @@ class ProfileController extends Controller
 
         $user = Auth::user();
 
-        $cloudinary = app(CloudinaryService::class);
+        $s3 = app(S3Service::class);
 
         // Delete old image if exists
         if ($user->profile && $user->profile->image) {
-            $cloudinary->deleteImage($user->profile->image);
+            $s3->deleteImage($user->profile->image);
         }
 
-        $upload = $cloudinary->uploadImage($request->file('image')->getRealPath(), 'profiles');
+        $upload = $s3->uploadImage($request->file('image')->getRealPath(), 'profiles');
 
         $user->profile()->updateOrCreate([], [
             'image' => $upload['url'],
@@ -77,8 +77,8 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         if ($user->profile && $user->profile->image) {
-            $cloudinary = app(CloudinaryService::class);
-            $cloudinary->deleteImage($user->profile->image);
+            $s3 = app(S3Service::class);
+            $s3->deleteImage($user->profile->image);
 
             $user->profile->image = null;
             $user->profile->save();
