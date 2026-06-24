@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Guests;
 use App\Services\S3Service;
+use Illuminate\Support\Facades\Hash;
 
 class GuestsController extends Controller
 {
@@ -19,6 +20,7 @@ class GuestsController extends Controller
         $request->validate([
             'name' => 'required|string',
             'email' => 'required|string|email|unique:guests,email',
+            'password' => 'required|string|min:6',
             'phone' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -33,6 +35,7 @@ class GuestsController extends Controller
         $guest = Guests::create([
             'name' => $request->name,
             'email' => $request->email,
+            'password' => Hash::make($request->password),
             'phone' => $request->phone,
             'image' => $imageUrl,
         ]);
@@ -52,12 +55,13 @@ class GuestsController extends Controller
     public function loginByEmail(Request $request)
     {
         $validated = $request->validate([
-            'email' => 'required|string|email'
+            'email' => 'required|string|email',
+            'password' => 'required|string'
         ]);
 
         $guest = Guests::where('email', $validated['email'])->first();
-        if (!$guest) {
-            return response()->json(['message' => 'Guest not found'], 404);
+        if (!$guest || !Hash::check($validated['password'], $guest->password)) {
+            return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
         return response()->json([

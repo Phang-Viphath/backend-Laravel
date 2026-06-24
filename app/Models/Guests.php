@@ -12,10 +12,16 @@ class Guests extends Model
     protected $fillable = [
         'name',
         'email',
+        'password',
         'phone',
         'image',
         'google_id',
     ];
+
+    protected $hidden = [
+        'password',
+    ];
+
     public function reservations(): HasMany
     {
         return $this->hasMany(Reservations::class);
