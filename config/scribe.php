@@ -213,38 +213,32 @@ INTRO,
     // Use configureStrategy() to specify settings for a strategy in the list.
     // Use removeStrategies() to remove an included strategy.
     'strategies' => [
-        'metadata' => [
-            ...Defaults::METADATA_STRATEGIES,
-        ],
-        'headers' => [
-            ...Defaults::HEADERS_STRATEGIES,
-            Strategies\StaticData::withSettings(data: [
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-            ]),
-        ],
-        'urlParameters' => [
-            ...Defaults::URL_PARAMETERS_STRATEGIES,
-        ],
-        'queryParameters' => [
-            ...Defaults::QUERY_PARAMETERS_STRATEGIES,
-        ],
-        'bodyParameters' => [
-            ...Defaults::BODY_PARAMETERS_STRATEGIES,
-        ],
-        'responses' => configureStrategy(
-            Defaults::RESPONSES_STRATEGIES,
-            Strategies\Responses\ResponseCalls::withSettings(
-                only: ['GET *'],
-                // Recommended: disable debug mode in response calls to avoid error stack traces in responses
-                config: [
+        'metadata' => Defaults::METADATA_STRATEGIES,
+        'headers' => array_merge(Defaults::HEADERS_STRATEGIES, [
+            Strategies\StaticData::class => [
+                'data' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+            ],
+        ]),
+        'urlParameters' => Defaults::URL_PARAMETERS_STRATEGIES,
+        'queryParameters' => Defaults::QUERY_PARAMETERS_STRATEGIES,
+        'bodyParameters' => Defaults::BODY_PARAMETERS_STRATEGIES,
+        'responses' => [
+            Strategies\Responses\UseResponseAttributes::class,
+            Strategies\Responses\UseTransformerTags::class,
+            Strategies\Responses\UseApiResourceTags::class,
+            Strategies\Responses\UseResponseTag::class,
+            Strategies\Responses\UseResponseFileTag::class,
+            Strategies\Responses\ResponseCalls::class => [
+                'only' => ['GET *'],
+                'config' => [
                     'app.debug' => false,
                 ]
-            )
-        ),
-        'responseFields' => [
-            ...Defaults::RESPONSE_FIELDS_STRATEGIES,
+            ]
         ],
+        'responseFields' => Defaults::RESPONSE_FIELDS_STRATEGIES,
     ],
 
     // For response calls, API resource responses and transformer responses,
