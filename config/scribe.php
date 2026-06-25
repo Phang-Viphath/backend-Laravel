@@ -1,7 +1,7 @@
 <?php
 
 use Knuckles\Scribe\Config\AuthIn;
-use Knuckles\Scribe\Config\Defaults;
+
 use Knuckles\Scribe\Extracting\Strategies;
 
 use function Knuckles\Scribe\Config\configureStrategy;
@@ -213,18 +213,37 @@ INTRO,
     // Use configureStrategy() to specify settings for a strategy in the list.
     // Use removeStrategies() to remove an included strategy.
     'strategies' => [
-        'metadata' => Defaults::METADATA_STRATEGIES,
-        'headers' => array_merge(Defaults::HEADERS_STRATEGIES, [
+        'metadata' => [
+            Strategies\Metadata\GetFromDocBlocks::class,
+            Strategies\Metadata\GetFromMetadataAttributes::class,
+        ],
+        'headers' => [
+            Strategies\Headers\GetFromHeaderAttribute::class,
+            Strategies\Headers\GetFromHeaderTag::class,
             Strategies\StaticData::class => [
                 'data' => [
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
                 ],
             ],
-        ]),
-        'urlParameters' => Defaults::URL_PARAMETERS_STRATEGIES,
-        'queryParameters' => Defaults::QUERY_PARAMETERS_STRATEGIES,
-        'bodyParameters' => Defaults::BODY_PARAMETERS_STRATEGIES,
+        ],
+        'urlParameters' => [
+            Strategies\UrlParameters\GetFromLaravelAPI::class,
+            Strategies\UrlParameters\GetFromUrlParamAttribute::class,
+            Strategies\UrlParameters\GetFromUrlParamTag::class,
+        ],
+        'queryParameters' => [
+            Strategies\QueryParameters\GetFromFormRequest::class,
+            Strategies\QueryParameters\GetFromInlineValidator::class,
+            Strategies\QueryParameters\GetFromQueryParamAttribute::class,
+            Strategies\QueryParameters\GetFromQueryParamTag::class,
+        ],
+        'bodyParameters' => [
+            Strategies\BodyParameters\GetFromFormRequest::class,
+            Strategies\BodyParameters\GetFromInlineValidator::class,
+            Strategies\BodyParameters\GetFromBodyParamAttribute::class,
+            Strategies\BodyParameters\GetFromBodyParamTag::class,
+        ],
         'responses' => [
             Strategies\Responses\UseResponseAttributes::class,
             Strategies\Responses\UseTransformerTags::class,
@@ -238,7 +257,10 @@ INTRO,
                 ]
             ]
         ],
-        'responseFields' => Defaults::RESPONSE_FIELDS_STRATEGIES,
+        'responseFields' => [
+            Strategies\ResponseFields\GetFromResponseFieldAttribute::class,
+            Strategies\ResponseFields\GetFromResponseFieldTag::class,
+        ],
     ],
 
     // For response calls, API resource responses and transformer responses,
