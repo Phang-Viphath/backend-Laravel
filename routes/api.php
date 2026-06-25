@@ -1,7 +1,24 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{AuthController, RoleController, UserController , RoomController, ProfileController, GuestsController, ReservationsController, HistorysController, ReportsController, PermissionController, PermissionRolesController, UsersRolesController, BakongController, TelegramController, NotificationController};
+use App\Http\Controllers\{
+    AuthController, 
+    RoleController, 
+    UserController, 
+    RoomController, 
+    ProfileController, 
+    GuestsController, 
+    ReservationsController, 
+    HistorysController, 
+    ReportsController, 
+    PermissionController, 
+    PermissionRolesController, 
+    UsersRolesController, 
+    BakongController, 
+    TelegramController, 
+    NotificationController, 
+    GoogleAuthController
+};
 
 // Auth routes
 Route::controller(AuthController::class)->group(function () {
@@ -21,7 +38,8 @@ Route::post('public/bakong/khqr', [BakongController::class, 'generateKhqr']);
 Route::post('public/bakong/verify', [BakongController::class, 'verifyPayment']);
 Route::post('public/bakong/verify-transaction', [BakongController::class, 'verifyTransaction']);
 Route::get('public/notifications', [NotificationController::class, 'publicIndex']);
-
+Route::get('/auth/guest/google', [GoogleAuthController::class, 'guestRedirect']);
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'guestCallback']);
 
 // Protected API routes
 Route::middleware('auth:api')->group(function () {

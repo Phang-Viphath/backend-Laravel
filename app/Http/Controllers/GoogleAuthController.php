@@ -42,13 +42,13 @@ class GoogleAuthController extends Controller
 
     public function guestRedirect()
     {
-        return Socialite::driver('google')->redirect();
+        return Socialite::driver('google')->stateless()->redirect();
     }
 
     public function guestCallback(Request $request)
     {
         try {
-            $googleUser = Socialite::driver('google')->user();
+            $googleUser = Socialite::driver('google')->stateless()->user();
 
             $guest = Guests::where('google_id', $googleUser->id)->first();
 
@@ -61,7 +61,6 @@ class GoogleAuthController extends Controller
                 ]);
             }
 
-            // Redirect to frontend with guest data
             $frontendUrl = config('services.google.frontend_url');
             return redirect($frontendUrl . '/auth/google/callback?guest_id=' . $guest->id . '&name=' . urlencode($guest->name) . '&email=' . urlencode($guest->email) . '&image=' . urlencode($guest->image ?? ''));
         } catch (\Exception $e) {
