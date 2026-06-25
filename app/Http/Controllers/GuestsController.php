@@ -60,7 +60,10 @@ class GuestsController extends Controller
         ]);
 
         $guest = Guests::where('email', $validated['email'])->first();
-        if (!$guest || !Hash::check($validated['password'], $guest->password)) {
+        if (!$guest) {
+            return response()->json(['message' => 'Guest not found'], 404);
+        }
+        if (!Hash::check($validated['password'], $guest->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
