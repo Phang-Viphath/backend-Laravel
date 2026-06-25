@@ -8,8 +8,8 @@
     <link rel="icon" type="image/png" href="/assets/Hotel_icon.png">
     <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="{{ asset("/vendor/scribe/css/theme-default.style.css") }}" media="screen">
-    <link rel="stylesheet" href="{{ asset("/vendor/scribe/css/theme-default.print.css") }}" media="print">
+    <link rel="stylesheet" href="/vendor/scribe/css/theme-default.style.css" media="screen">
+    <link rel="stylesheet" href="/vendor/scribe/css/theme-default.print.css" media="print">
     <link rel="stylesheet" href="/css/scribe-premium.css" media="screen">
 
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
@@ -31,9 +31,9 @@
         var useCsrf = Boolean();
         var csrfUrl = "/sanctum/csrf-cookie";
     </script>
-    <script src="{{ asset("/vendor/scribe/js/tryitout-5.11.0.js") }}"></script>
+    <script src="/vendor/scribe/js/tryitout-5.11.0.js"></script>
 
-    <script src="{{ asset("/vendor/scribe/js/theme-default-5.11.0.js") }}"></script>
+    <script src="/vendor/scribe/js/theme-default-5.11.0.js"></script>
 
 </head>
 
@@ -42,7 +42,7 @@
 <a href="#" id="nav-button">
     <span>
         MENU
-        <img src="{{ asset("/vendor/scribe/images/navbar.png") }}" alt="navbar-image"/>
+        <img src="/vendor/scribe/images/navbar.png" alt="navbar-image"/>
     </span>
 </a>
 <div class="tocify-wrapper">
