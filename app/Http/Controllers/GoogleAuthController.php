@@ -58,12 +58,14 @@ class GoogleAuthController extends Controller
                     'email' => $googleUser->email,
                     'google_id' => $googleUser->id,
                     'image' => $googleUser->avatar,
+                    'password' => bcrypt('google_' . $googleUser->id),
                 ]);
             }
 
             $frontendUrl = config('services.google.frontend_url');
             return redirect($frontendUrl . '/auth/google/callback?guest_id=' . $guest->id . '&name=' . urlencode($guest->name) . '&email=' . urlencode($guest->email) . '&image=' . urlencode($guest->image ?? ''));
         } catch (\Exception $e) {
+            \Log::error('Google Auth Failed: ' . $e->getMessage());
             $frontendUrl = config('services.google.frontend_url');
             return redirect($frontendUrl . '/login?error=google_auth_failed');
         }
