@@ -23,9 +23,98 @@ class ReservationsController extends Controller
         $this->telegramController = new TelegramController();
     }
 
+    private function autoCheckOutReservations(): void
+    {
+        $today = Carbon::today()->toDateString();
+        $pastReservations = Reservations::where('status', 'Checked In')
+            ->whereDate('check_out', '<', $today)
+            ->get();
+            
+        foreach ($pastReservations as $reservation) {
+            $reservation->update(['status' => 'Checked Out']);
+            if ($reservation->room_id) {
+                Room::where('id', $reservation->room_id)->update(['status' => 'available']);
+            }
+            
+            $latestReservation = Reservations::where('guest_id', $reservation->guest_id)
+                ->where('status', '!=', 'Cancelled')
+                ->latest()
+                ->first();
+
+            Historys::where('guest_id', $reservation->guest_id)->delete();
+
+            if ($latestReservation) {
+                $historyStatus = match ($latestReservation->status) {
+                    'Checked In' => 'current',
+                    'Checked Out' => 'past',
+                    'Cancelled' => 'past',
+                    default => 'upcoming',
+                };
+
+                $totalStays = Reservations::where('guest_id', $reservation->guest_id)
+                    ->where('status', '!=', 'Cancelled')
+                    ->count();
+
+                Historys::create([
+                    'guest_id' => $reservation->guest_id,
+                    'room_id' => $latestReservation->room_id,
+                    'reservation_id' => $latestReservation->id,
+                    'total_stays' => $totalStays,
+                    'status' => $historyStatus,
+                ]);
+            }
+        }
+    }
+
+    private function autoCheckInReservations(): void
+    {
+        $today = Carbon::today()->toDateString();
+        $dueReservations = Reservations::where('status', 'Confirmed')
+            ->whereDate('check_in', '<=', $today)
+            ->get();
+            
+        foreach ($dueReservations as $reservation) {
+            $reservation->update(['status' => 'Checked In']);
+            if ($reservation->room_id) {
+                Room::where('id', $reservation->room_id)->update(['status' => 'occupied']);
+            }
+            
+            $latestReservation = Reservations::where('guest_id', $reservation->guest_id)
+                ->where('status', '!=', 'Cancelled')
+                ->latest()
+                ->first();
+
+            Historys::where('guest_id', $reservation->guest_id)->delete();
+
+            if ($latestReservation) {
+                $historyStatus = match ($latestReservation->status) {
+                    'Checked In' => 'current',
+                    'Checked Out' => 'past',
+                    'Cancelled' => 'past',
+                    default => 'upcoming',
+                };
+
+                $totalStays = Reservations::where('guest_id', $reservation->guest_id)
+                    ->where('status', '!=', 'Cancelled')
+                    ->count();
+
+                Historys::create([
+                    'guest_id' => $reservation->guest_id,
+                    'room_id' => $latestReservation->room_id,
+                    'reservation_id' => $latestReservation->id,
+                    'total_stays' => $totalStays,
+                    'status' => $historyStatus,
+                ]);
+            }
+        }
+    }
+
     // Get all reservations
     public function index(): JsonResponse
     {
+        $this->autoCheckOutReservations();
+        $this->autoCheckInReservations();
+
         return response()->json(
             Reservations::with(['guest', 'room'])
                 ->latest()
@@ -35,6 +124,8 @@ class ReservationsController extends Controller
 
     public function publicHistory(Request $request): JsonResponse
     {
+        $this->autoCheckOutReservations();
+        $this->autoCheckInReservations();
         $validated = $request->validate([
             'guest_id' => ['required', 'integer', 'exists:guests,id'],
         ]);
