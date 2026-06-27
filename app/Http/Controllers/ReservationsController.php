@@ -79,12 +79,17 @@ class ReservationsController extends Controller
                 $nights   = max(1, $checkIn->diffInDays($checkOut));
                 $total    = (float) $room->price * $nights;
 
+                $statusToUpdate = $validated['status'] ?? 'Pending';
+                if ($statusToUpdate === 'Confirmed' && $checkIn->isToday()) {
+                    $statusToUpdate = 'Checked In';
+                }
+
                 $reservation = Reservations::create([
                     'guest_id'  => $validated['guest_id'],
                     'room_id'   => $room->id,
                     'check_in'  => $validated['check_in'],
                     'check_out' => $validated['check_out'],
-                    'status'    => $validated['status'] ?? 'Pending',
+                    'status'    => $statusToUpdate,
                     'total'     => $total,
                 ]);
 
@@ -93,11 +98,11 @@ class ReservationsController extends Controller
                 // Send Telegram notification
                 $this->telegramController->sendReservationNotification($reservation->toArray());
 
-                $roomStatus = match ($reservation->status) {
-                    'Pending', 'Confirmed', 'Checked In' => 'occupied',
-                    default => 'available',
-                };
-                Room::where('id', $room->id)->update(['status' => $roomStatus]);
+                if ($reservation->status === 'Checked In') {
+                    Room::where('id', $room->id)->update(['status' => 'occupied']);
+                } elseif (in_array($reservation->status, ['Checked Out', 'Cancelled'])) {
+                    Room::where('id', $room->id)->update(['status' => 'available']);
+                }
 
                 $historyStatus = match ($reservation->status) {
                     'Checked In' => 'current',
@@ -170,12 +175,8 @@ class ReservationsController extends Controller
                     $overlapping = Reservations::where('room_id', $newRoomId)
                         ->where('id', '!=', $reservation->id)
                         ->where('status', '!=', 'Cancelled')
-                        ->where(function ($q) use ($newCheckIn, $newCheckOut) {
-                            $q->whereBetween('check_in', [$newCheckIn, $newCheckOut])
-                              ->orWhereBetween('check_out', [$newCheckIn, $newCheckOut])
-                              ->orWhereRaw('? BETWEEN check_in AND check_out', [$newCheckIn])
-                              ->orWhereRaw('? BETWEEN check_in AND check_out', [$newCheckOut]);
-                        })
+                        ->whereDate('check_in', '<', $newCheckOut)
+                        ->whereDate('check_out', '>', $newCheckIn)
                         ->exists();
 
                     if ($overlapping) {
@@ -185,6 +186,12 @@ class ReservationsController extends Controller
                     $roomForPrice = Room::findOrFail($newRoomId);
                     $nights = max(1, Carbon::parse($newCheckIn)->diffInDays(Carbon::parse($newCheckOut)));
                     $validated['total'] = (float) $roomForPrice->price * $nights;
+                }
+
+                if (isset($validated['status']) && $validated['status'] === 'Confirmed') {
+                    if (\Carbon\Carbon::parse($newCheckIn)->isToday()) {
+                        $validated['status'] = 'Checked In';
+                    }
                 }
 
                 $reservation->update($validated);
@@ -206,11 +213,11 @@ class ReservationsController extends Controller
                 }
 
                 if ($newRoomIdFinal) {
-                    $roomStatus = match ($newStatus) {
-                        'Pending', 'Confirmed', 'Checked In' => 'occupied',
-                        default => 'available',
-                    };
-                    Room::where('id', $newRoomIdFinal)->update(['status' => $roomStatus]);
+                    if ($newStatus === 'Checked In') {
+                        Room::where('id', $newRoomIdFinal)->update(['status' => 'occupied']);
+                    } elseif (in_array($newStatus, ['Checked Out', 'Cancelled'])) {
+                        Room::where('id', $newRoomIdFinal)->update(['status' => 'available']);
+                    }
                 }
 
                 $syncHistoryForGuest = function (int $guestId): void {
@@ -356,18 +363,23 @@ class ReservationsController extends Controller
 
                 $oldStatus = $reservation->status;
 
+                $statusToUpdate = $validated['status'] ?? 'Confirmed';
+                if ($statusToUpdate === 'Confirmed' && \Carbon\Carbon::parse($reservation->check_in)->isToday()) {
+                    $statusToUpdate = 'Checked In';
+                }
+
                 $reservation->update([
-                    'status' => $validated['status'] ?? 'Confirmed',
+                    'status' => $statusToUpdate,
                 ]);
 
                 $reservation->refresh()->load(['guest', 'room']);
 
                 if ($reservation->room_id) {
-                    $roomStatus = match ($reservation->status) {
-                        'Pending', 'Confirmed', 'Checked In' => 'occupied',
-                        default => 'available',
-                    };
-                    Room::where('id', $reservation->room_id)->update(['status' => $roomStatus]);
+                    if ($reservation->status === 'Checked In') {
+                        Room::where('id', $reservation->room_id)->update(['status' => 'occupied']);
+                    } elseif (in_array($reservation->status, ['Checked Out', 'Cancelled'])) {
+                        Room::where('id', $reservation->room_id)->update(['status' => 'available']);
+                    }
                 }
 
                 $historyStatus = match ($reservation->status) {
