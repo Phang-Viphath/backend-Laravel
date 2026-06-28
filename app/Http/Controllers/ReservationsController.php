@@ -25,9 +25,17 @@ class ReservationsController extends Controller
 
     private function autoCheckOutReservations(): void
     {
-        $today = Carbon::today()->toDateString();
+        $now = Carbon::now();
+        $today = $now->toDateString();
+        $isPastNoon = $now->hour >= 12;
+
         $pastReservations = Reservations::where('status', 'Checked In')
-            ->whereDate('check_out', '<', $today)
+            ->where(function ($query) use ($today, $isPastNoon) {
+                $query->whereDate('check_out', '<', $today);
+                if ($isPastNoon) {
+                    $query->orWhereDate('check_out', '=', $today);
+                }
+            })
             ->get();
             
         foreach ($pastReservations as $reservation) {
@@ -68,9 +76,17 @@ class ReservationsController extends Controller
 
     private function autoCheckInReservations(): void
     {
-        $today = Carbon::today()->toDateString();
+        $now = Carbon::now();
+        $today = $now->toDateString();
+        $isPastNoon = $now->hour >= 12;
+
         $dueReservations = Reservations::where('status', 'Confirmed')
-            ->whereDate('check_in', '<=', $today)
+            ->where(function ($query) use ($today, $isPastNoon) {
+                $query->whereDate('check_in', '<', $today);
+                if ($isPastNoon) {
+                    $query->orWhereDate('check_in', '=', $today);
+                }
+            })
             ->get();
             
         foreach ($dueReservations as $reservation) {
@@ -171,7 +187,7 @@ class ReservationsController extends Controller
                 $total    = (float) $room->price * $nights;
 
                 $statusToUpdate = $validated['status'] ?? 'Pending';
-                if ($statusToUpdate === 'Confirmed' && $checkIn->isToday()) {
+                if ($statusToUpdate === 'Confirmed' && $checkIn->isToday() && \Carbon\Carbon::now()->hour >= 12) {
                     $statusToUpdate = 'Checked In';
                 }
 
@@ -280,7 +296,7 @@ class ReservationsController extends Controller
                 }
 
                 if (isset($validated['status']) && $validated['status'] === 'Confirmed') {
-                    if (\Carbon\Carbon::parse($newCheckIn)->isToday()) {
+                    if (\Carbon\Carbon::parse($newCheckIn)->isToday() && \Carbon\Carbon::now()->hour >= 12) {
                         $validated['status'] = 'Checked In';
                     }
                 }
@@ -455,7 +471,7 @@ class ReservationsController extends Controller
                 $oldStatus = $reservation->status;
 
                 $statusToUpdate = $validated['status'] ?? 'Confirmed';
-                if ($statusToUpdate === 'Confirmed' && \Carbon\Carbon::parse($reservation->check_in)->isToday()) {
+                if ($statusToUpdate === 'Confirmed' && \Carbon\Carbon::parse($reservation->check_in)->isToday() && \Carbon\Carbon::now()->hour >= 12) {
                     $statusToUpdate = 'Checked In';
                 }
 
