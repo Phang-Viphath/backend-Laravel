@@ -9,7 +9,12 @@ class RoomController extends Controller
 {
     public function index()
     {
-        $rooms = Room::all();
+        $rooms = Room::with(['reservations' => function($query) {
+            $query->select('id', 'room_id', 'check_in', 'check_out', 'status')
+                  ->whereIn('status', ['Pending', 'Confirmed', 'Checked In'])
+                  ->where('check_out', '>=', \Carbon\Carbon::today()->toDateString())
+                  ->orderBy('check_in', 'asc');
+        }])->get();
         return response()->json($rooms);
     }
 
