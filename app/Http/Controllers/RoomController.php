@@ -49,12 +49,6 @@ class RoomController extends Controller
         return response()->json($room, 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
         $room = Room::find($id);
@@ -64,13 +58,6 @@ class RoomController extends Controller
         return response()->json($room);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         $room = Room::find($id);
@@ -90,7 +77,6 @@ class RoomController extends Controller
 
         if ($request->hasFile('image')) {
             $s3 = app(S3Service::class);
-            // Delete old image if it exists
             if ($room->image) {
                 $s3->deleteImage($room->image);
             }
@@ -109,12 +95,6 @@ class RoomController extends Controller
         return response()->json($room);
     }
 
-    /**
-     * Remove the specified resource from storage.  
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
         $room = Room::find($id);

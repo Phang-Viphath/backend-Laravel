@@ -89,7 +89,6 @@ class GuestsController extends Controller
 
         if ($request->hasFile('image')) {
             $s3 = app(S3Service::class);
-            // Delete old image if it exists
             if ($guest->image) {
                 $s3->deleteImage($guest->image);
             }

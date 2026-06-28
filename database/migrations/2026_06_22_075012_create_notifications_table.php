@@ -6,16 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
         Schema::create('hotel_notifications', function (Blueprint $table) {
             $table->id();
-            $table->string('type');          // 'reservation', 'status_update', 'cancellation'
+            $table->string('type');
             $table->string('title');
             $table->text('body');
             $table->unsignedBigInteger('reservation_id')->nullable();
@@ -24,11 +19,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::dropIfExists('hotel_notifications');

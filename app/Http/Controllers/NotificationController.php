@@ -8,18 +8,11 @@ use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
-    /**
-     * Strip HTML tags and decode HTML entities from a notification body.
-     */
     private function cleanBody(string $body): string
     {
-        // Decode HTML entities first (e.g. &lt; → <), then strip tags
         return html_entity_decode(strip_tags($body), ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 
-    /**
-     * Apply cleanBody to a collection of notifications.
-     */
     private function cleanCollection($notifications): \Illuminate\Support\Collection
     {
         return $notifications->map(function ($n) {
@@ -28,9 +21,6 @@ class NotificationController extends Controller
         });
     }
 
-    /**
-     * Get paginated notifications, latest first (admin).
-     */
     public function index(): JsonResponse
     {
         $notifications = HotelNotification::orderByDesc('created_at')
@@ -40,10 +30,6 @@ class NotificationController extends Controller
         return response()->json($this->cleanCollection($notifications));
     }
 
-    /**
-     * Public endpoint: fetch notifications for specific reservation IDs.
-     * Accepts ?reservation_ids=1,2,3
-     */
     public function publicIndex(Request $request): JsonResponse
     {
         $ids = $request->query('reservation_ids', '');
@@ -68,18 +54,12 @@ class NotificationController extends Controller
         return response()->json($this->cleanCollection($notifications));
     }
 
-    /**
-     * Mark all notifications as read.
-     */
     public function markAllRead(): JsonResponse
     {
         HotelNotification::where('is_read', false)->update(['is_read' => true]);
         return response()->json(['message' => 'All notifications marked as read.']);
     }
 
-    /**
-     * Mark a single notification as read.
-     */
     public function markRead(int $id): JsonResponse
     {
         $notification = HotelNotification::findOrFail($id);
@@ -88,9 +68,6 @@ class NotificationController extends Controller
         return response()->json($notification);
     }
 
-    /**
-     * Count unread notifications.
-     */
     public function unreadCount(): JsonResponse
     {
         $count = HotelNotification::where('is_read', false)->count();

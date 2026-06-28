@@ -55,7 +55,6 @@ class ProfileController extends Controller
 
         $s3 = app(S3Service::class);
 
-        // Delete old image if exists
         if ($user->profile && $user->profile->image) {
             $s3->deleteImage($user->profile->image);
         }

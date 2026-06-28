@@ -125,7 +125,6 @@ class ReservationsController extends Controller
         }
     }
 
-    // Get all reservations
     public function index(): JsonResponse
     {
         $this->autoCheckOutReservations();
@@ -154,7 +153,6 @@ class ReservationsController extends Controller
         return response()->json($reservations);
     }
 
-    // Store a new reservation
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -202,7 +200,6 @@ class ReservationsController extends Controller
 
                 $reservation->load(['guest', 'room']);
 
-                // Send Telegram notification
                 $this->telegramController->sendReservationNotification($reservation->toArray());
 
                 if ($reservation->status === 'Checked In') {
@@ -244,7 +241,6 @@ class ReservationsController extends Controller
         }
     }
 
-    // Show a specific reservation
     public function show($id): JsonResponse
     {
         try {
@@ -307,7 +303,6 @@ class ReservationsController extends Controller
                 $newStatus = $reservation->status;
                 $newRoomIdFinal = $reservation->room_id;
 
-                // Send Telegram notification if status changed
                 if (isset($validated['status']) && $oldStatus !== $newStatus) {
                     $this->telegramController->sendStatusUpdateNotification(
                         $reservation->toArray(),
@@ -365,7 +360,6 @@ class ReservationsController extends Controller
                     }
                     Historys::where('reservation_id', $reservation->id)->delete();
                     
-                    // Send cancellation notification
                     $this->telegramController->sendCancellationNotification($reservation->toArray());
                 }
 
@@ -386,19 +380,16 @@ class ReservationsController extends Controller
         }
     }
     
-    // Cancel a reservation
     public function destroy($id): JsonResponse
     {
         try {
             return DB::transaction(function () use ($id) {
                 $reservation = Reservations::with('room')->findOrFail($id);
                 
-                // Store reservation data for notification before updating
                 $reservationData = $reservation->load(['guest', 'room'])->toArray();
                 
                 $reservation->update(['status' => 'Cancelled']);
 
-                // Send cancellation notification
                 $this->telegramController->sendCancellationNotification($reservationData);
 
                 if ($reservation->room) {
